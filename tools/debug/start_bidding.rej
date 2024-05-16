@@ -1,0 +1,10 @@
+diff a/tools/debug/start_bidding b/tools/debug/start_bidding	(rejected hunks)
+@@ -51,7 +51,7 @@ export SERVER_START_CMD=$(cat << END
+ --enable_protected_app_signals="false" \
+ --enable_protected_audience="true" \
+ --tee_ad_retrieval_kv_server_addr="localhost:50057" \
+---ps_verbosity=2 \
++--ps_verbosity=15 \
+ --ad_retrieval_timeout_ms="60000" && exit
+ END
+ )

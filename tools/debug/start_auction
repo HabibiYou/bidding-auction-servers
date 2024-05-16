@@ -34,15 +34,15 @@ export SERVER_START_CMD=$(cat << END
 --seller_code_fetch_config='{
       "fetchMode": 0,
       "auctionJsPath": "",
-      "auctionJsUrl": "https://pubads.g.doubleclick.net/td/sjs",
+      "auctionJsUrl": "localhost:50072/static/decisionLogic.js",
       "urlFetchPeriodMs": 13000000,
       "urlFetchTimeoutMs": 30000,
       "enableSellerDebugUrlGeneration": true,
-      "enableAdtechCodeLogging": false,
+      "enableAdtechCodeLogging": true,
       "enableReportResultUrlGeneration": true,
       "enableReportWinUrlGeneration": true,
-      "buyerReportWinJsUrls": {"https://td.doubleclick.net":"https://td.doubleclick.net/td/bjs"},
-      "protectedAppSignalsBuyerReportWinJsUrls": {"https://td.doubleclick.net":"https://storage.googleapis.com/wasm-explorer/PAS/PASreportWin.js"}
+      "buyerReportWinJsUrls": {"https://bidding-auction-server.example.com":"localhost:50072/static/biddingLogic.js"},
+      "protectedAppSignalsBuyerReportWinJsUrls": {"https://bidding-auction-server.example.com":"localhost:50072/static/biddingLogic.js"}
     }' \
 --enable_otel_based_logging="false" \
 --consented_debug_token="" \

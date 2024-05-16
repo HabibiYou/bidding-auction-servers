@@ -61,4 +61,8 @@ terraform.rc
 # Docker
 docker-buildx-*.log
 
+# Local Server built/temporary files
+tools/local-servers/*.pem
+tools/local-servers/envoy_config/bidding_auction_servers_descriptor_set.pb
+
 core

@@ -54,7 +54,6 @@ declare GCP_IMAGE_REPO
 declare -i GCP_SKIP_IMAGE_UPLOAD=0
 declare -a BUILD_TARGETS=(
   "//tools/secure_invoke/..."
-  "//api:bidding_auction_servers_descriptor_set"
 )
 declare -a TEST_TARGETS+=(
   "//services/common/..."

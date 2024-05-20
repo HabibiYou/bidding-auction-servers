@@ -95,7 +95,7 @@ elif [[ $BUILD_MODE == "docker" ]]; then
 
     echo "Starting chrome to test."
 
-    gnome-terminal --title="Chrome Test" -- bash -c "google-chrome-unstable -enable-features=\"PrivacySandboxAdsAPIsOverride,InterestGroupStorage,Fledge,BiddingAndScoringDebugReportingAPI,FencedFrames,NoncedPartitionedCookies,AllowURNsInIframes,FledgeBiddingAndAuctionServerAPI,FledgeBiddingAndAuctionServer:FledgeBiddingAndAuctionKeyURL/http%3A%2F%2F127%2E0%2E0%2E1%3A50072%2Fstatic%2Ftest_keys.json\" --disable-web-security --host-resolver-rules=\"MAP bidding-auction-server.example.com 127.0.0.1:50071\" --privacy-sandbox-enrollment-overrides=https://bidding-auction-server.example.com --ignore-certificate-errors --user-data-dir=/tmp/test_profile; exec bash"
+    gnome-terminal --title="Chrome Test" -- bash -c "google-chrome-unstable --enable-features=\"PrivacySandboxAdsAPIsOverride,InterestGroupStorage,Fledge,BiddingAndScoringDebugReportingAPI,FencedFrames,NoncedPartitionedCookies,AllowURNsInIframes,FledgeBiddingAndAuctionServerAPI,FledgeBiddingAndAuctionServer:FledgeBiddingAndAuctionKeyURL/http%3A%2F%2F127%2E0%2E0%2E1%3A50072%2Fstatic%2Ftest_keys.json\" --disable-web-security --host-resolver-rules=\"MAP bidding-auction-server.example.com 127.0.0.1:50071\" --privacy-sandbox-enrollment-overrides=https://bidding-auction-server.example.com --ignore-certificate-errors --user-data-dir=/tmp/test_profile; exec bash"
 
     # To join an IG go to
     # https://bidding-auction-server.example.com/static/join.html#numGroups=1

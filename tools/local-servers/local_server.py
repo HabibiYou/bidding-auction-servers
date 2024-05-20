@@ -54,7 +54,7 @@ class MyWebServerHandler(SimpleHTTPRequestHandler):
         print(response_obj)
         ciphertext = base64.b64decode(response_obj["auctionResultCiphertext"])
         ciphertext_hash = sha256(ciphertext).digest()
-        hash_b64 = base64.b64encode(ciphertext_hash).decode("utf-8")
+        hash_b64 = base64.urlsafe_b64encode(ciphertext_hash).decode("utf-8")
 
         self.send_response(HTTPStatus.OK)
         self.send_header("Ad-Auction-Result", hash_b64)

@@ -140,8 +140,6 @@ http_archive(
 )
 
 # B&A Testing for protected audience
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 http_archive(
     name = "io_bazel_rules_webtesting",
     sha256 = "f1f4d2c2f88d2beac64c82499a1e762b037966675dd892da89c87e39d72b33f6",
@@ -155,9 +153,9 @@ load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories"
 web_test_repositories()
 
 # Browser stuff
-load("@io_bazel_rules_webtesting//web/versioned:browsers-0.3.4.bzl",  "browser_repositories")
+load("@io_bazel_rules_webtesting//web/versioned:browsers-0.3.4.bzl", "browser_repositories")
 
-browser_repositories(chromium=True)
+browser_repositories(chromium = True)
 
 # Python stuff
 load("@io_bazel_rules_webtesting//web:py_repositories.bzl", "py_repositories")

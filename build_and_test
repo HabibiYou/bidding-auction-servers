@@ -16,6 +16,8 @@
 
 echo "Handling Prerequisites..."
 
+set -e
+
 # Check for build mode (local or docker)
 if [[ $# -eq 0 ]] ; then
     echo 'Error: Please specify build mode ("local" or "docker")'
@@ -49,7 +51,7 @@ if [[ $BUILD_MODE == "local" ]]; then
 elif [[ $BUILD_MODE == "docker" ]]; then
 
     # Run this to clear docker containers
-    docker rm -v -f $(docker ps -qa)
+    docker container prune
 
     echo "Starting local servers..."
 

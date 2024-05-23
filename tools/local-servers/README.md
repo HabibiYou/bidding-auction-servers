@@ -58,7 +58,7 @@ cd tools/local-servers/envoy-config/
 The Envoy proxy is needed to translate the JSON HTTP requests into GRPC that is used by the B&A
 stack.
 
-9. Make sure that all other Chrome windows are closed. In the final terminal window, you can run
+1. Make sure that all other Chrome windows are closed. In the final terminal window, you can run
    Chrome:
 
 ```bash
@@ -71,9 +71,8 @@ and resolving the `bidding-auction-server.example.com` domain to the local HTTPS
 port 50071. Note that since this command line causes Chrome to ignore certificate errors, you should
 not use this Chrome to browse general websites.
 
-10. Navigate the browser to `https://bidding-auction-server.example.com/static/join.html`. This web
-    page will join 10 interest groups.
+1. Navigate the browser to `https://bidding-auction-server.example.com/static/join.html`. This web
+   page will join 10 interest groups.
 
-11. Navigate the browser to `https://bidding-auction-server.example.com/static/ba.html`. This web
-    page will run the B&A auction, outputing various pieces of information to the Chrome Dev
-    Console.
+1. Navigate the browser to `https://bidding-auction-server.example.com/static/ba.html`. This web
+   page will run the B&A auction, outputing various pieces of information to the Chrome Dev Console.

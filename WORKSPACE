@@ -152,12 +152,11 @@ load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories"
 
 web_test_repositories()
 
-# Browser stuff
-load("@io_bazel_rules_webtesting//web/versioned:browsers-0.3.4.bzl", "browser_repositories")
 
-browser_repositories(chromium = True)
+load("//tools/debug/PA-Test:BROWSER.bzl", "browser_repositories")
 
-# Python stuff
+browser_repositories()
+
 load("@io_bazel_rules_webtesting//web:py_repositories.bzl", "py_repositories")
 
 py_repositories()

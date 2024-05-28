@@ -18,30 +18,47 @@
   <body>
     <script>
       let NUM_GROUPS = 10;
-      let params = new URLSearchParams('?'+window.location.hash.substring(1));
+      let params = new URLSearchParams('?' + window.location.hash.substring(1));
       if (params.has("numGroups")) {
         NUM_GROUPS = params.get("numGroups");
       }
       let divElement = document.createElement("div");
+      divElement.id = 'join-group-status';
       divElement.innerText = `Creating ${NUM_GROUPS} interest groups`;
       document.body.appendChild(divElement);
+
       async function joinGroups() {
-        for (idx = 0; idx < NUM_GROUPS; idx++) {
-          await navigator.joinAdInterestGroup({
+        let successCount = 0;
+        let errorCount = 0;
+        const statusElement = document.getElementById('join-group-status');
+
+        for (let idx = 0; idx < NUM_GROUPS; idx++) {
+          try {
+            await navigator.joinAdInterestGroup({
               owner: 'https://bidding-auction-server.example.com',
               name: `group ${idx}`,
               biddingLogicUrl: 'https://bidding-auction-server.example.com/static/biddingLogic.js',
-              userBiddingSignals: {foo: "bar", oid: idx},
+              userBiddingSignals: { foo: "bar", oid: idx },
               trustedBiddingSignalsKeys: ['foo', 'bar'],
               ads: [{
                 renderUrl: 'https://bidding-auction-server.example.com/static/fake_ad.html',
-              }]},
-            36000).catch((error) => {
-              console.error(error);
-            });
-          divElement.innerText = `Creating ${idx}/${NUM_GROUPS} interest groups`;
+              }],
+            }, 36000);
+
+            successCount++;
+          } catch (error) {
+            console.error(`Error joining group ${idx}:`, error);
+            errorCount++;
+          }
+
+          statusElement.innerText = `Created ${successCount}, Failed ${errorCount}`;
+        }
+
+        if (errorCount > 0) {
+          statusElement.innerText = "Failed to join interest groups.";
         }
       }
+
       joinGroups();
     </script>
   </body>

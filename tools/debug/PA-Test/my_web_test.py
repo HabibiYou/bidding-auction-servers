@@ -22,8 +22,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-
-class BrowserTest(unittest.TestCase):
+BASE_URL = "https://bidding-auction-server.example.com"
+MULTISELLER_URL = "/static/ba-multiseller.html"
+SINGLESELLER_URL = "/static/ba.html"
+IG_COUNT = 10  # This can be 1-100
+MAX_TIMEOUT= 10
+class AuctionTest(unittest.TestCase):
     # Set up chrome with the proper flags, and start the driver.
     def setUp(self):
         chrome_options = ChromeOptions()
@@ -58,30 +62,26 @@ class BrowserTest(unittest.TestCase):
         finally:
             self.driver = None
 
-    def test_auction_result(self):
-        base_url = "https://bidding-auction-server.example.com"
-        ig_count = 10  # This can be 1-100
-        max_timeout = 10
-
+    def run_and_test_auction(self,auction_html):
         # Join the auction
-        self.driver.get(f"{base_url}/static/join.html#numGroups={ig_count}")
+        self.driver.get(f"{BASE_URL}/static/join.html#numGroups={IG_COUNT}")
         try:
-            WebDriverWait(self.driver, max_timeout).until(
+            WebDriverWait(self.driver, MAX_TIMEOUT).until(
                 EC.text_to_be_present_in_element(
-                    (By.ID, "join-group-status"), f"Created {ig_count}, Failed 0"
+                    (By.ID, "join-group-status"), f"Created {IG_COUNT}, Failed 0"
                 )
             )
         except TimeoutException:
             status_element = self.driver.find_element(By.ID, "join-group-status")
             print("ERROR: ", status_element.text)
             self.fail("Did not properly join the interest groups.")
-        print(f"Sucessfully Joined {ig_count} interest groups")
+        print(f"Sucessfully Joined {IG_COUNT} interest groups")
 
         # Navigate to the bidding page
-        self.driver.get(f"{base_url}/static/ba.html")
+        self.driver.get(f"{BASE_URL}{auction_html}")
         print("Navigated to bidding auction page")
         try:
-            WebDriverWait(self.driver, max_timeout).until(
+            WebDriverWait(self.driver, MAX_TIMEOUT).until(
                 EC.text_to_be_present_in_element(
                     (By.ID, "result"), "Auction had a winner"
                 )
@@ -91,7 +91,14 @@ class BrowserTest(unittest.TestCase):
             print("ERROR: ", status_element.text)
             self.fail("The auction did not have a winner")
         print("Auction did have a winner!")
+        
+    def test_singleSeller(self):
+        print("Running single seller test...")
+        self.run_and_test_auction(SINGLESELLER_URL)
 
+    def test_multiSeller(self):
+        print("Running multi seller test...")
+        self.run_and_test_auction(MULTISELLER_URL)
 
 if __name__ == "__main__":
     unittest.main(verbosity=15)

@@ -35,7 +35,7 @@ static_resources:
                 route: { cluster: grpc_cluster, timeout: 5s }
             response_headers_to_add:
             - header:
-                key: 'x-allow-FLEDGE'
+                key: 'Ad-Auction-Allowed'
                 value: 'true'
               append: false
             - header:

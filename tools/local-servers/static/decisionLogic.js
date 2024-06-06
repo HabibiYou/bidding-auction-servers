@@ -15,7 +15,7 @@
  */
 
 function scoreAd(adMetadata, bid, auctionConfig, trustedScoringSignals, browserSignals) {
-  return { desirability: bid, allowComponentAuction: false };
+  return { desirability: bid, allowComponentAuction: true };
 }
 
 function reportResult(auctionConfig, browserSignals) {

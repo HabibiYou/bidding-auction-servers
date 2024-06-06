@@ -28,7 +28,7 @@ function generateBid(
     adCost: 1,
     bid: 1,
     render: 'https://bidding-auction-server.example.com/static/fake_ad.html',
-    allowComponentAuction: false,
+    allowComponentAuction: true,
     modelingSignals: 123,
   };
 }

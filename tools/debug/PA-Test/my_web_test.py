@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import os
 import unittest
 from testing.web import webtest
@@ -27,6 +28,10 @@ MULTISELLER_URL = "/static/ba-multiseller.html"
 SINGLESELLER_URL = "/static/ba.html"
 IG_COUNT = 10  # This can be 1-100
 MAX_TIMEOUT= 10
+# Reporting URLS defined in the decsion logic and bidding logic.
+SELLER_REPORTING_URL = "seller_result"
+BIDDING_REPORTING_URL = "bidding_winner"
+
 class AuctionTest(unittest.TestCase):
     # Set up chrome with the proper flags, and start the driver.
     def setUp(self):
@@ -53,6 +58,7 @@ class AuctionTest(unittest.TestCase):
         chrome_options.add_argument(f"--user-data-dir={temp_profile_dir}")
 
         capabilities = chrome_options.to_capabilities()
+        capabilities['goog:loggingPrefs'] = {'performance': 'ALL'}
 
         self.driver = webtest.new_webdriver_session(capabilities)
 
@@ -61,6 +67,27 @@ class AuctionTest(unittest.TestCase):
             self.driver.quit()
         finally:
             self.driver = None
+            
+    def check_reporting(self,log_data):
+        seller_result_found = False
+        bidding_winner_found = False
+
+        for entry in log_data:
+            if(seller_result_found and bidding_winner_found):
+                break
+            message = json.loads(entry['message'])
+            method = message['message']['method']
+            params = message['message']['params']
+
+            if method == "Network.requestWillBeSent":
+                url = params['request']['url']
+                
+                if SELLER_REPORTING_URL in url:
+                    seller_result_found = True
+                elif BIDDING_REPORTING_URL in url:
+                    bidding_winner_found = True
+
+        return seller_result_found and bidding_winner_found
 
     def run_and_test_auction(self,auction_html):
         # Join the auction
@@ -95,10 +122,22 @@ class AuctionTest(unittest.TestCase):
     def test_singleSeller(self):
         print("Running single seller test...")
         self.run_and_test_auction(SINGLESELLER_URL)
+    
+    def test_singleSellerReporting(self):
+        print("Running single seller reporting test...")
+        self.run_and_test_auction(SINGLESELLER_URL)
+        didReportingHappen = self.check_reporting(self.driver.get_log('performance'))
+        self.assertTrue(didReportingHappen)
 
     def test_multiSeller(self):
         print("Running multi seller test...")
         self.run_and_test_auction(MULTISELLER_URL)
-
+    
+    def test_multiSellerWithReporting(self):
+        print("Running multi seller test with reporting...")
+        self.run_and_test_auction(MULTISELLER_URL)
+        didReportingHappen = self.check_reporting(self.driver.get_log('performance'))
+        self.assertTrue(didReportingHappen)
+        
 if __name__ == "__main__":
     unittest.main(verbosity=15)

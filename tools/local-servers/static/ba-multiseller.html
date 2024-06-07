@@ -26,8 +26,8 @@
         let blob_start = performance.now();
         let fetch_start;
         let runAdAuction_start = 0;
-        const frame = document.getElementById("protected-audience-ad");
-        var result_container = document.getElementById("result");
+        const fencedFrame = document.getElementById("protected-audience-ad");
+        const result_container = document.getElementById("result");
         
         try {
             const data = await navigator.getInterestGroupAdAuctionData({ seller: SELLER });
@@ -68,6 +68,7 @@
                     serverResponse: responseArray,
                     requestId: data.requestId,
                 }],
+                resolveToConfig: true,
             });
 
             let final_time = performance.now();
@@ -79,9 +80,9 @@
             }
 
             if (urn instanceof FencedFrameConfig) {
-                frame.config = urn;
+                fencedFrame.config = urn;
             } else {
-                frame.src = urn;
+                fencedFrame.src = urn;
             }
 
             console.log(JSON.stringify(urn));

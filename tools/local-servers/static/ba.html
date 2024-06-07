@@ -27,8 +27,8 @@ async function runAuction() {
     let blob_start = performance.now();
     let runAdAuction_start = 0;
 
-    const frame = document.getElementById("protected-audience-ad");
-    var result_container = document.getElementById("result");
+    const fencedFrame = document.getElementById("protected-audience-ad");
+    const result_container = document.getElementById("result");
 
     try {
         const data = await navigator.getInterestGroupAdAuctionData({ seller: SELLER });
@@ -62,6 +62,7 @@ async function runAuction() {
             interestGroupBuyers: [buyer],
             serverResponse: responseArray,
             requestId: data.requestId,
+            resolveToConfig: true,
         });
 
         let final_time = performance.now();
@@ -73,14 +74,15 @@ async function runAuction() {
         }
 
         if (urn instanceof FencedFrameConfig) {
-            frame.config = urn;
+            fencedFrame.config = urn;
         } else {
-            frame.src = urn;
+            fencedFrame.src = urn;
         }
 
         console.log(JSON.stringify(urn));
         console.log("RunAdAuction took " + (final_time - runAdAuction_start) + " ms");
         console.log("Total auction " + (final_time - blob_start) + " ms");
+
     } catch (error) {
         result_container.innerHTML = `failed: ${error} <br>`;
 

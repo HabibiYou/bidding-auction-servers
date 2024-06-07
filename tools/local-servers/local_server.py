@@ -37,9 +37,6 @@ class MyWebServerHandler(SimpleHTTPRequestHandler):
         return parsed_url.path == "/cgi-bin/fake_ad_server.py"
 
     def handle_request(self, b64Data, auction_config):
-        print("path in handle: ",self.path)
-
-    
         request = {
             "protectedAudienceCiphertext": b64Data,
             "auctionConfig":auction_config,
@@ -157,6 +154,7 @@ class MyWebServerHandler(SimpleHTTPRequestHandler):
                             return None
 
             self.send_response(HTTPStatus.OK)
+            self.send_header('Supports-Loading-Mode', 'fenced-frame')
             self.send_header("Content-type", ctype)
             self.send_header("Content-Length", str(fs[6]))
             self.send_header("Ad-Auction-Allowed","true")
@@ -170,7 +168,8 @@ class MyWebServerHandler(SimpleHTTPRequestHandler):
 
 
     def send_head(self):   
-        #Make sure the auctionConfig is made accordingly for the test.  
+        #Make sure the auctionConfig is made accordingly for the test. 
+        print("path we got: ",self.path) 
         if(self.kMultiSellerURL in self.path):
             self.auction_config["top_level_seller"] = self.kSeller
             

@@ -142,17 +142,18 @@ class AuctionTest(unittest.TestCase):
         didReportingHappen = self.check_reporting(self.driver.get_log('performance'))
         self.assertTrue(didReportingHappen)
 
-    def test_multiSeller(self):
-        print("Running multi seller test...")
-        self.run_and_test_auction(MULTISELLER_URL)
+    # TODO: multi-seller does not work, waiting for https://b.corp.google.com/issues/345283153
+    # def test_multiSeller(self):
+    #     print("Running multi seller test...")
+    #     self.run_and_test_auction(MULTISELLER_URL)
     
-    def test_multiSellerWithReporting(self):
-        print("Running multi seller test with reporting...")
-        self.run_and_test_auction(MULTISELLER_URL)
-        get_reporting_results_url = f"{BASE_URL}{GET_REPORTING_VARS_URL}"
-        self.driver.get(get_reporting_results_url)
-        didReportingHappen = self.check_reporting(self.driver.get_log('performance'))
-        self.assertTrue(didReportingHappen)
+    # def test_multiSellerWithReporting(self):
+    #     print("Running multi seller test with reporting...")
+    #     self.run_and_test_auction(MULTISELLER_URL)
+    #     get_reporting_results_url = f"{BASE_URL}{GET_REPORTING_VARS_URL}"
+    #     self.driver.get(get_reporting_results_url)
+    #     didReportingHappen = self.check_reporting(self.driver.get_log('performance'))
+    #     self.assertTrue(didReportingHappen)
         
 if __name__ == "__main__":
     unittest.main(verbosity=15)

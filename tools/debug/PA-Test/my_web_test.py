@@ -29,12 +29,15 @@ SINGLESELLER_URL = "/static/ba.html"
 IG_COUNT = 10  # This can be 1-100
 MAX_TIMEOUT= 10
 # Reporting URLS defined in the decsion logic and bidding logic.
-SELLER_REPORTING_URL = "seller_result"
-BIDDING_REPORTING_URL = "bidding_winner"
+SELLER_REPORTING_URL = "/static/seller_result"
+BIDDING_REPORTING_URL = "/static/bidding_winner"
+GET_REPORTING_VARS_URL = "/get-vars"
+RESET_REPORTING_RESULTS_URL = "/reset-vars"
 
 class AuctionTest(unittest.TestCase):
-    # Set up chrome with the proper flags, and start the driver.
+
     def setUp(self):
+        # Set up chrome with the proper flags, and start the driver.
         chrome_options = ChromeOptions()
         chrome_options.add_argument(
             "--enable-features=PrivacySandboxAdsAPIsOverride,InterestGroupStorage,Fledge,BiddingAndScoringDebugReportingAPI,FencedFrames,NoncedPartitionedCookies,AllowURNsInIframes,FledgeBiddingAndAuctionServerAPI,FledgeBiddingAndAuctionServer:FledgeBiddingAndAuctionKeyURL/http%3A%2F%2F127%2E0%2E0%2E1%3A50072%2Fstatic%2Ftest_keys.json"
@@ -62,6 +65,9 @@ class AuctionTest(unittest.TestCase):
 
         self.driver = webtest.new_webdriver_session(capabilities)
 
+        #The server will reset the global vars
+        self.driver.get(f"{BASE_URL}{RESET_REPORTING_RESULTS_URL}")
+
     def tearDown(self):
         try:
             self.driver.quit()
@@ -71,9 +77,10 @@ class AuctionTest(unittest.TestCase):
     def check_reporting(self,log_data):
         seller_result_found = False
         bidding_winner_found = False
+        ad_report_beacons_found = False
 
         for entry in log_data:
-            if(seller_result_found and bidding_winner_found):
+            if(seller_result_found and bidding_winner_found and ad_report_beacons_found):
                 break
             message = json.loads(entry['message'])
             method = message['message']['method']
@@ -86,11 +93,15 @@ class AuctionTest(unittest.TestCase):
                     seller_result_found = True
                 elif BIDDING_REPORTING_URL in url:
                     bidding_winner_found = True
-
-        return seller_result_found and bidding_winner_found
+            elif method == "Network.responseReceived":
+                headers = params['response']['headers']
+                if("Both-Ad-Beacons-Reported" in headers):
+                    ad_report_beacons_found = headers["Both-Ad-Beacons-Reported"]
+    
+        return seller_result_found and bidding_winner_found and ad_report_beacons_found
 
     def run_and_test_auction(self,auction_html):
-        # Join the auction
+        # Join the interest groups
         self.driver.get(f"{BASE_URL}/static/join.html#numGroups={IG_COUNT}")
         try:
             WebDriverWait(self.driver, MAX_TIMEOUT).until(
@@ -126,6 +137,8 @@ class AuctionTest(unittest.TestCase):
     def test_singleSellerReporting(self):
         print("Running single seller reporting test...")
         self.run_and_test_auction(SINGLESELLER_URL)
+        get_reporting_results_url = f"{BASE_URL}{GET_REPORTING_VARS_URL}"
+        self.driver.get(get_reporting_results_url)
         didReportingHappen = self.check_reporting(self.driver.get_log('performance'))
         self.assertTrue(didReportingHappen)
 
@@ -136,6 +149,8 @@ class AuctionTest(unittest.TestCase):
     def test_multiSellerWithReporting(self):
         print("Running multi seller test with reporting...")
         self.run_and_test_auction(MULTISELLER_URL)
+        get_reporting_results_url = f"{BASE_URL}{GET_REPORTING_VARS_URL}"
+        self.driver.get(get_reporting_results_url)
         didReportingHappen = self.check_reporting(self.driver.get_log('performance'))
         self.assertTrue(didReportingHappen)
         

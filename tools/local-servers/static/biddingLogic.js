@@ -35,4 +35,7 @@ function generateBid(
 
 function reportWin(auctionSignals, perBuyerSignals, sellerSignals, browserSignals, directFromSellerSignals) {
   sendReportTo('https://bidding-auction-server.example.com/static/bidding_winner');
+  registerAdBeacon({
+    'auctionWinner': 'https://bidding-auction-server.example.com/static/bidding_winner',
+   });
 }

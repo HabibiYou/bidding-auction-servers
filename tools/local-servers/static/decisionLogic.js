@@ -20,4 +20,7 @@ function scoreAd(adMetadata, bid, auctionConfig, trustedScoringSignals, browserS
 
 function reportResult(auctionConfig, browserSignals) {
   sendReportTo('https://bidding-auction-server.example.com/static/seller_result');
+  registerAdBeacon({
+    'auctionWinner':'https://bidding-auction-server.example.com/static/seller_result',
+   });
 }

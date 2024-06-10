@@ -17,12 +17,17 @@ import urllib.request
 from http import HTTPStatus
 from urllib.parse import urlparse, parse_qs
 
+SELLER_RESULT_REPORTED = False
+BIDDING_RESULT_REPORTED = False
+
 
 class MyWebServerHandler(SimpleHTTPRequestHandler):
     kBuyer = "https://bidding-auction-server.example.com"
     kSeller = "https://bidding-auction-server.example.com"
     kMultiSellerURL = "ba-multiseller.html"
     kSingleSellerURL = "ba.html"
+    kResetURL = "reset-vars"
+    kGetValuesURL = "get-vars"
     auction_config = {
             "seller_signals": "{}",
             "auction_signals": "{}",
@@ -31,6 +36,33 @@ class MyWebServerHandler(SimpleHTTPRequestHandler):
             "perBuyerConfig": {kBuyer: {"buyerSignals": '"foo"'}},
             "codeExperimentSpec": {},
         }
+
+    def do_POST(self): 
+        global SELLER_RESULT_REPORTED, BIDDING_RESULT_REPORTED
+        
+        self.send_response(HTTPStatus.OK)
+        self.end_headers()
+        # Check if the request is for seller_result or bidding_winner
+        if "/static/seller_result" in self.path:
+            SELLER_RESULT_REPORTED = True
+        elif "/static/bidding_winner" in self.path:
+            BIDDING_RESULT_REPORTED = True
+
+    def do_GET(self):
+        global SELLER_RESULT_REPORTED, BIDDING_RESULT_REPORTED
+        if self.kResetURL in self.path:
+            SELLER_RESULT_REPORTED = False
+            BIDDING_RESULT_REPORTED = False
+            self.send_response(HTTPStatus.OK) 
+            self.end_headers()
+        elif self.kGetValuesURL in self.path:
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Seller-Result-Reported", str(SELLER_RESULT_REPORTED))
+            self.send_header("Bidding-Winner-Reported", str(BIDDING_RESULT_REPORTED))
+            self.send_header("Both-Ad-Beacons-Reported",str(BIDDING_RESULT_REPORTED and SELLER_RESULT_REPORTED))
+            self.end_headers()
+        else:  
+            SimpleHTTPRequestHandler.do_GET(self)
 
     def is_fake_ad_service(self):
         parsed_url = urlparse(self.path)
@@ -173,9 +205,9 @@ class MyWebServerHandler(SimpleHTTPRequestHandler):
         if(self.kMultiSellerURL in self.path):
             self.auction_config["top_level_seller"] = self.kSeller
             
-        if(self.kSingleSellerURL in self.path):
-            self.auction_config.pop("top_level_seller", None)  # Return None if key not present
-
+        elif(self.kSingleSellerURL in self.path):
+            self.auction_config.pop("top_level_seller", None)
+            
         if self.is_fake_ad_service():
             parsed_url = urlparse(self.path)
             query = parse_qs(parsed_url.query)

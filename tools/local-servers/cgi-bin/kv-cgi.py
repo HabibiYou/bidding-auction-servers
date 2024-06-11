@@ -23,7 +23,7 @@ import sys
 form = cgi.FieldStorage()
 
 print("Content-type: application/JSON")
-print("X-Allow-FLEDGE: true")
+print("Ad-Auction-Allowed: true")
 print()  # blank line. End of headers
 
 response = {}

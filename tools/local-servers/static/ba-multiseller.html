@@ -13,63 +13,91 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-
 <html>
-  <body>
-    <script blocking="render">
-      let FETCH_URL="https://bidding-auction-server.example.com/cgi-bin/fake_ad_server.py";
-      let SELLER = 'https://bidding-auction-server.example.com';
-      let buyer = SELLER;
-      let blob_start = performance.now();
-      let runAdAuction_start = 0;
-      navigator.getInterestGroupAdAuctionData({seller: SELLER})
-        .then((data)=>{
-          console.log("Create blob took " + (performance.now() - blob_start) + " ms");
-          if (data.request.length == 0) {
-            return Promise.reject("Got no data");
-          }
-          let b64Data = btoa(String.fromCharCode.apply(null, data.request)).replaceAll('+', '-').replaceAll('/', '_');
-          console.log(b64Data);
-          let fetch_url = FETCH_URL + "?data=" + b64Data;
-          let fetch_start = performance.now();
-          fetch(fetch_url, {method: 'get', adAuctionHeaders: true})
-          .then((http_response)=> {
+<body>
+  <div id="result"></div>
+  <fencedframe id="protected-audience-ad" mode="opaque-ads"></fencedframe>
+
+  <script blocking="render">
+    async function runAuction() {
+        let FETCH_URL = "https://bidding-auction-server.example.com/cgi-bin/fake_ad_server.py";
+        let SELLER = 'https://bidding-auction-server.example.com';
+        let buyer = SELLER;
+        let blob_start = performance.now();
+        let fetch_start;
+        let runAdAuction_start = 0;
+        const fencedFrame = document.getElementById("protected-audience-ad");
+        const result_container = document.getElementById("result");
+        
+        try {
+            const data = await navigator.getInterestGroupAdAuctionData({ seller: SELLER });
+            console.log("Create blob took " + (performance.now() - blob_start) + " ms");
+            if (data.request.length == 0) {
+                throw new Error("Got no data");
+            }
+            console.log("data:\n ",data)
+
+            let b64Data = btoa(String.fromCharCode.apply(null, data.request)).replaceAll('+', '-').replaceAll('/', '_');
+            console.log(b64Data);
+            let fetch_url = FETCH_URL + "?data=" + b64Data;
+            fetch_start = performance.now();
+
+            const http_response = await fetch(fetch_url, { method: 'get', adAuctionHeaders: true });
             console.log(http_response.url);
             console.log(http_response.type);
             console.log(http_response.redirected);
             console.log(http_response.status);
             console.log(http_response.statusText);
             console.log(Array.from(http_response.headers.entries()));
-            return http_response.text();
-          })
-          .then((response) => {
+            const response = await http_response.text();
+            
             console.log("Fetch response took " + (performance.now() - fetch_start) + " ms");
             console.log(response);
             let responseJSON = JSON.parse(response);
             let responseStr = responseJSON.auctionResultCiphertext;
             let responseArray = Uint8Array.from(atob(responseStr), c => c.charCodeAt(0));
             runAdAuction_start = performance.now();
-            return navigator.runAdAuction({
-              seller: SELLER,
-              decisionLogicURL: SELLER + '/decisionLogic.js',
-              componentAuctions: [{
+            
+            const urn = await navigator.runAdAuction({
                 seller: SELLER,
-                decisionLogicURL: SELLER + '/decisionLogic.js',
-                interestGroupBuyers: [buyer],
-                serverResponse: responseArray,
-                requestId: data.requestId,
-              }],
+                decisionLogicURL: SELLER + '/static/decisionLogic.js', //this is only needed here in multi seller for bna
+                componentAuctions: [{
+                    seller: SELLER,
+                    decisionLogicURL: SELLER,
+                    interestGroupBuyers: [buyer],
+                    serverResponse: responseArray,
+                    requestId: data.requestId,
+                }],
+                resolveToConfig: true,
             });
-          })
-          .then( (urn) => {
+
             let final_time = performance.now();
+
+            if (urn != null) {
+                result_container.innerHTML = `Auction had a winner<br>`;
+            } else {
+                result_container.innerHTML = `Auction did not have a winner<br>`;
+            }
+
+            if (urn instanceof FencedFrameConfig) {
+                fencedFrame.config = urn;
+            } else {
+                fencedFrame.src = urn;
+            }
+
             console.log(JSON.stringify(urn));
             console.log("RunAdAuction took " + (final_time - runAdAuction_start) + " ms");
             console.log("Total auction " + (final_time - blob_start) + " ms");
-          })
-          .catch(console.error);
-        })
-        .catch(console.error);
-   </script>
-  </body>
+        } catch (error) {
+            result_container.innerHTML = `failed: ${error} <br>`;
+            console.error(error);
+        }
+    }
+
+    runAuction(); 
+  </script>
+</body>
+
 </html>
+
+

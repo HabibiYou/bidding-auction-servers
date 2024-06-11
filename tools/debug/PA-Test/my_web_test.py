@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import os
 import unittest
 from testing.web import webtest
@@ -22,10 +23,21 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
+BASE_URL = "https://bidding-auction-server.example.com"
+MULTISELLER_URL = "/static/ba-multiseller.html"
+SINGLESELLER_URL = "/static/ba.html"
+IG_COUNT = 10  # This can be 1-100
+MAX_TIMEOUT= 10
+# Reporting URLS defined in the decsion logic and bidding logic.
+SELLER_REPORTING_URL = "/static/seller_result"
+BIDDING_REPORTING_URL = "/static/bidding_winner"
+GET_REPORTING_VARS_URL = "/get-vars"
+RESET_REPORTING_RESULTS_URL = "/reset-vars"
 
-class BrowserTest(unittest.TestCase):
-    # Set up chrome with the proper flags, and start the driver.
+class AuctionTest(unittest.TestCase):
+
     def setUp(self):
+        # Set up chrome with the proper flags, and start the driver.
         chrome_options = ChromeOptions()
         chrome_options.add_argument(
             "--enable-features=PrivacySandboxAdsAPIsOverride,InterestGroupStorage,Fledge,BiddingAndScoringDebugReportingAPI,FencedFrames,NoncedPartitionedCookies,AllowURNsInIframes,FledgeBiddingAndAuctionServerAPI,FledgeBiddingAndAuctionServer:FledgeBiddingAndAuctionKeyURL/http%3A%2F%2F127%2E0%2E0%2E1%3A50072%2Fstatic%2Ftest_keys.json"
@@ -49,39 +61,65 @@ class BrowserTest(unittest.TestCase):
         chrome_options.add_argument(f"--user-data-dir={temp_profile_dir}")
 
         capabilities = chrome_options.to_capabilities()
+        capabilities['goog:loggingPrefs'] = {'performance': 'ALL'}
 
         self.driver = webtest.new_webdriver_session(capabilities)
+
+        #The server will reset the global vars
+        self.driver.get(f"{BASE_URL}{RESET_REPORTING_RESULTS_URL}")
 
     def tearDown(self):
         try:
             self.driver.quit()
         finally:
             self.driver = None
+            
+    def checkReporting(self,log_data):
+        seller_result_found = False
+        bidding_winner_found = False
+        ad_report_beacons_found = False
 
-    def test_auction_result(self):
-        base_url = "https://bidding-auction-server.example.com"
-        ig_count = 10  # This can be 1-100
-        max_timeout = 10
+        for entry in log_data:
+            if(seller_result_found and bidding_winner_found and ad_report_beacons_found):
+                break
+            message = json.loads(entry['message'])
+            method = message['message']['method']
+            params = message['message']['params']
 
-        # Join the auction
-        self.driver.get(f"{base_url}/static/join.html#numGroups={ig_count}")
+            if method == "Network.requestWillBeSent":
+                url = params['request']['url']
+                
+                if SELLER_REPORTING_URL in url:
+                    seller_result_found = True
+                elif BIDDING_REPORTING_URL in url:
+                    bidding_winner_found = True
+            elif method == "Network.responseReceived":
+                headers = params['response']['headers']
+                if("Both-Ad-Beacons-Reported" in headers):
+                    ad_report_beacons_found = headers["Both-Ad-Beacons-Reported"]
+    
+        return seller_result_found and bidding_winner_found and ad_report_beacons_found
+
+    def runAndTestAuction(self,auction_html):
+        # Join the interest groups
+        self.driver.get(f"{BASE_URL}/static/join.html#numGroups={IG_COUNT}")
         try:
-            WebDriverWait(self.driver, max_timeout).until(
+            WebDriverWait(self.driver, MAX_TIMEOUT).until(
                 EC.text_to_be_present_in_element(
-                    (By.ID, "join-group-status"), f"Created {ig_count}, Failed 0"
+                    (By.ID, "join-group-status"), f"Created {IG_COUNT}, Failed 0"
                 )
             )
         except TimeoutException:
             status_element = self.driver.find_element(By.ID, "join-group-status")
             print("ERROR: ", status_element.text)
             self.fail("Did not properly join the interest groups.")
-        print(f"Sucessfully Joined {ig_count} interest groups")
+        print(f"Sucessfully Joined {IG_COUNT} interest groups")
 
         # Navigate to the bidding page
-        self.driver.get(f"{base_url}/static/ba.html")
+        self.driver.get(f"{BASE_URL}{auction_html}")
         print("Navigated to bidding auction page")
         try:
-            WebDriverWait(self.driver, max_timeout).until(
+            WebDriverWait(self.driver, MAX_TIMEOUT).until(
                 EC.text_to_be_present_in_element(
                     (By.ID, "result"), "Auction had a winner"
                 )
@@ -91,7 +129,31 @@ class BrowserTest(unittest.TestCase):
             print("ERROR: ", status_element.text)
             self.fail("The auction did not have a winner")
         print("Auction did have a winner!")
+        
+    def test_singleSeller(self):
+        print("Running single seller test...")
+        self.runAndTestAuction(SINGLESELLER_URL)
+    
+    def test_singleSellerReporting(self):
+        print("Running single seller reporting test...")
+        self.runAndTestAuction(SINGLESELLER_URL)
+        get_reporting_results_url = f"{BASE_URL}{GET_REPORTING_VARS_URL}"
+        self.driver.get(get_reporting_results_url)
+        didReportingHappen = self.checkReporting(self.driver.get_log('performance'))
+        self.assertTrue(didReportingHappen)
 
-
+    # TODO: multi-seller does not work, waiting for https://b.corp.google.com/issues/345283153
+    # def test_multiSeller(self):
+    #     print("Running multi seller test...")
+    #     self.runAndTestAuction(MULTISELLER_URL)
+    
+    # def test_multiSellerWithReporting(self):
+    #     print("Running multi seller test with reporting...")
+    #     self.runAndTestAuction(MULTISELLER_URL)
+    #     get_reporting_results_url = f"{BASE_URL}{GET_REPORTING_VARS_URL}"
+    #     self.driver.get(get_reporting_results_url)
+    #     didReportingHappen = self.checkReporting(self.driver.get_log('performance'))
+    #     self.assertTrue(didReportingHappen)
+        
 if __name__ == "__main__":
     unittest.main(verbosity=15)

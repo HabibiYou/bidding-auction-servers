@@ -15,9 +15,12 @@
  */
 
 function scoreAd(adMetadata, bid, auctionConfig, trustedScoringSignals, browserSignals) {
-  return { desirability: bid, allowComponentAuction: false };
+  return { desirability: bid, allowComponentAuction: true };
 }
 
 function reportResult(auctionConfig, browserSignals) {
   sendReportTo('https://bidding-auction-server.example.com/static/seller_result');
+  registerAdBeacon({
+    'auctionWinner':'https://bidding-auction-server.example.com/static/seller_result',
+   });
 }

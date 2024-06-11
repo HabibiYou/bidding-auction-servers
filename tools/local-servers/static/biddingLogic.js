@@ -28,11 +28,14 @@ function generateBid(
     adCost: 1,
     bid: 1,
     render: 'https://bidding-auction-server.example.com/static/fake_ad.html',
-    allowComponentAuction: false,
+    allowComponentAuction: true,
     modelingSignals: 123,
   };
 }
 
 function reportWin(auctionSignals, perBuyerSignals, sellerSignals, browserSignals, directFromSellerSignals) {
   sendReportTo('https://bidding-auction-server.example.com/static/bidding_winner');
+  registerAdBeacon({
+    'auctionWinner': 'https://bidding-auction-server.example.com/static/bidding_winner',
+   });
 }

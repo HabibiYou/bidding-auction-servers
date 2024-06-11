@@ -74,7 +74,7 @@ class AuctionTest(unittest.TestCase):
         finally:
             self.driver = None
             
-    def check_reporting(self,log_data):
+    def checkReporting(self,log_data):
         seller_result_found = False
         bidding_winner_found = False
         ad_report_beacons_found = False
@@ -100,7 +100,7 @@ class AuctionTest(unittest.TestCase):
     
         return seller_result_found and bidding_winner_found and ad_report_beacons_found
 
-    def run_and_test_auction(self,auction_html):
+    def runAndTestAuction(self,auction_html):
         # Join the interest groups
         self.driver.get(f"{BASE_URL}/static/join.html#numGroups={IG_COUNT}")
         try:
@@ -132,27 +132,27 @@ class AuctionTest(unittest.TestCase):
         
     def test_singleSeller(self):
         print("Running single seller test...")
-        self.run_and_test_auction(SINGLESELLER_URL)
+        self.runAndTestAuction(SINGLESELLER_URL)
     
     def test_singleSellerReporting(self):
         print("Running single seller reporting test...")
-        self.run_and_test_auction(SINGLESELLER_URL)
+        self.runAndTestAuction(SINGLESELLER_URL)
         get_reporting_results_url = f"{BASE_URL}{GET_REPORTING_VARS_URL}"
         self.driver.get(get_reporting_results_url)
-        didReportingHappen = self.check_reporting(self.driver.get_log('performance'))
+        didReportingHappen = self.checkReporting(self.driver.get_log('performance'))
         self.assertTrue(didReportingHappen)
 
     # TODO: multi-seller does not work, waiting for https://b.corp.google.com/issues/345283153
     # def test_multiSeller(self):
     #     print("Running multi seller test...")
-    #     self.run_and_test_auction(MULTISELLER_URL)
+    #     self.runAndTestAuction(MULTISELLER_URL)
     
     # def test_multiSellerWithReporting(self):
     #     print("Running multi seller test with reporting...")
-    #     self.run_and_test_auction(MULTISELLER_URL)
+    #     self.runAndTestAuction(MULTISELLER_URL)
     #     get_reporting_results_url = f"{BASE_URL}{GET_REPORTING_VARS_URL}"
     #     self.driver.get(get_reporting_results_url)
-    #     didReportingHappen = self.check_reporting(self.driver.get_log('performance'))
+    #     didReportingHappen = self.checkReporting(self.driver.get_log('performance'))
     #     self.assertTrue(didReportingHappen)
         
 if __name__ == "__main__":

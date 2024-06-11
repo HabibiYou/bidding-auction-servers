@@ -17,6 +17,7 @@ import urllib.request
 from http import HTTPStatus
 from urllib.parse import urlparse, parse_qs
 
+# Global variables to keep track of whether the reporting beacon was seen.
 SELLER_RESULT_REPORTED = False
 BIDDING_RESULT_REPORTED = False
 
@@ -36,7 +37,8 @@ class MyWebServerHandler(SimpleHTTPRequestHandler):
             "perBuyerConfig": {kBuyer: {"buyerSignals": '"foo"'}},
             "codeExperimentSpec": {},
         }
-
+    # Overrides the POST method to ensure the global variables are
+    # set if the report event from the ad beacon hits this local server.
     def do_POST(self): 
         global SELLER_RESULT_REPORTED, BIDDING_RESULT_REPORTED
         
@@ -47,7 +49,8 @@ class MyWebServerHandler(SimpleHTTPRequestHandler):
             SELLER_RESULT_REPORTED = True
         elif "/static/bidding_winner" in self.path:
             BIDDING_RESULT_REPORTED = True
-
+    # Overrides the GET method to ensure the 'sendReportTo' reporting is seen,
+    # from the decision logic and the bidding logic.
     def do_GET(self):
         global SELLER_RESULT_REPORTED, BIDDING_RESULT_REPORTED
         if self.kResetURL in self.path:
@@ -64,11 +67,11 @@ class MyWebServerHandler(SimpleHTTPRequestHandler):
         else:  
             SimpleHTTPRequestHandler.do_GET(self)
 
-    def is_fake_ad_service(self):
+    def isFakeAdService(self):
         parsed_url = urlparse(self.path)
         return parsed_url.path == "/cgi-bin/fake_ad_server.py"
 
-    def handle_request(self, b64Data, auction_config):
+    def handleRequest(self, b64Data, auction_config):
         request = {
             "protectedAudienceCiphertext": b64Data,
             "auctionConfig":auction_config,
@@ -105,7 +108,7 @@ class MyWebServerHandler(SimpleHTTPRequestHandler):
         self.wfile.write(response)
         return
     
-    def send_head2(self):
+    def send_head_original(self):
         """Rewritten SimpleHTTPRequestHandler's method in order to
         pass proper headers needed.
         
@@ -208,12 +211,12 @@ class MyWebServerHandler(SimpleHTTPRequestHandler):
         elif(self.kSingleSellerURL in self.path):
             self.auction_config.pop("top_level_seller", None)
             
-        if self.is_fake_ad_service():
+        if self.isFakeAdService():
             parsed_url = urlparse(self.path)
             query = parse_qs(parsed_url.query)
-            return self.handle_request(query["data"][0], self.auction_config)
+            return self.handleRequest(query["data"][0], self.auction_config)
         else:
-            return self.send_head2()
+            return self.send_head_original()
         
 
 if len(sys.argv) < 3:

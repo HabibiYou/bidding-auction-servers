@@ -20,6 +20,8 @@ The test simulates the behavior of a web browser interacting with the B&A system
 -   **Docker:** Make sure
     [Docker](https://g3doc.corp.google.com/cloud/containers/g3doc/glinux-docker/install.md?cl=head)
     is installed and running on your system.
+    - make sure to run `docker rm -v -f $(docker ps -qa)` before you begin to release
+    all docker containers being used. 
 -   **Envoy:** Make sure [Envoy](https://g3doc.corp.google.com/company/teams/envoy/index.md?cl=head)
     is installed and running on your system.
 
@@ -36,6 +38,7 @@ The test simulates the behavior of a web browser interacting with the B&A system
 
         This script builds and runs the necessary Docker containers for the B&A server and its
         dependencies.
+        - *This will ask for sudo access in order to check if the docker daemon is running.*
 
 2. **Run the Bazel Test:**
 
@@ -51,11 +54,15 @@ The test simulates the behavior of a web browser interacting with the B&A system
           python3``: This specifies the location of your Python 3 interpreter if it's not in the default `/opt/bin/python3`
           location.
 
-**Important Note:**
+**Current Test Cases:**
 
-Currently, there's a known issue where the Docker build process can interfere with Bazel's build
-output (`bazel-bin`). Due to this, it's recommended to run the Docker build and the Bazel test in
-separate repositories to avoid conflicts.
+- Single level auction
+- Single level auction reporting
+
+Tests below are ready but are waiting [a bug](https://b.corp.google.com/issues/345283153) to be fixed in order
+to run them.
+- Multi level auction 
+- Multi level auction reporting
 
 ## Troubleshooting
 

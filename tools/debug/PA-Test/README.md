@@ -45,7 +45,7 @@ The test simulates the behavior of a web browser interacting with the B&A system
     - From the root directory of this `PA-Test` directory, run the following command:
 
         ```bash
-        bazel test //tools/debug/PA-Test:my_web_test --noincompatible_use_python_toolchains --python3_path=`which python3`
+        bazel test //tools/debug/PA-Test:protected_audience_integration_test --noincompatible_use_python_toolchains --python3_path=`which python3`
         ```
 
         - `--noincompatible_use_python_toolchains`: This flag helps ensure compatibility with your

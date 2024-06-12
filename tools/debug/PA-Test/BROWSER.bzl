@@ -17,7 +17,6 @@ More information opn the webtesting browser repo can be found here:
 https://github.com/bazelbuild/rules_webtesting/blob/d8208bddac1e44b3327430cc422f952b3244536a/web/versioned/browsers-0.3.4.bzl#L80
 """
 
-# TODO make a good docstring
 load("@io_bazel_rules_webtesting//web:web.bzl", "platform_archive")
 
 def browser_repositories():

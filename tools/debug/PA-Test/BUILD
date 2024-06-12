@@ -15,8 +15,8 @@
 load("@io_bazel_rules_webtesting//web:py.bzl", "py_web_test_suite")
 
 py_web_test_suite(
-    name = "my_web_test",
-    srcs = ["my_web_test.py"],
+    name = "protected_audience_integration_test",
+    srcs = ["protected_audience_integration_test.py"],
     browsers = [
         "@io_bazel_rules_webtesting//browsers:chromium-local",
     ],

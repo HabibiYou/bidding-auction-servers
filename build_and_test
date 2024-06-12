@@ -68,7 +68,7 @@ echo "started envoy"
 
 sleep 5 # Wait for envoy to start
 
-bazel test //tools/debug/PA-Test:my_web_test --noincompatible_use_python_toolchains --python3_path=`which python3`
+bazel test //tools/debug/PA-Test:protected_audience_integration_test --noincompatible_use_python_toolchains --python3_path=`which python3`
 
 # To run a chrome with proper flags run:
 # gnome-terminal --title="Chrome Test" -- bash -c "google-chrome-unstable --enable-features=\"PrivacySandboxAdsAPIsOverride,InterestGroupStorage,Fledge,BiddingAndScoringDebugReportingAPI,FencedFrames,NoncedPartitionedCookies,AllowURNsInIframes,FledgeBiddingAndAuctionServerAPI,FledgeBiddingAndAuctionServer:FledgeBiddingAndAuctionKeyURL/http%3A%2F%2F127%2E0%2E0%2E1%3A50072%2Fstatic%2Ftest_keys.json\" --disable-web-security --host-resolver-rules=\"MAP bidding-auction-server.example.com 127.0.0.1:50071\" --privacy-sandbox-enrollment-overrides=https://bidding-auction-server.example.com --ignore-certificate-errors --user-data-dir=/tmp/test_profile; exec bash"
